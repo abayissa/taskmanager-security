@@ -22,8 +22,19 @@ function authMiddleware(req, res, next) {
   });
 }
 
+function escapeHtml(text) {
+  if (!text) return text;
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 router.post('/', authMiddleware, (req, res) => {
-  const { title, description } = req.body;
+  const title = escapeHtml(req.body.title);
+  const description = escapeHtml(req.body.description);
 
   const sql = `INSERT INTO tasks (title, description, ownerId) VALUES (?, ?, ?)`;
   db.run(sql, [title, description, req.user.id], function (err) {
@@ -67,7 +78,9 @@ router.get('/search/query', authMiddleware, (req, res) => {
 });
 
 router.put('/:id', authMiddleware, (req, res) => {
-  const { title, description, status } = req.body;
+  const title = escapeHtml(req.body.title);
+  const description = escapeHtml(req.body.description);
+  const status = req.body.status;
 
   db.get(`SELECT * FROM tasks WHERE id = ?`, [req.params.id], (err, task) => {
     if (err) return res.status(500).json({ error: 'Erreur serveur' });
