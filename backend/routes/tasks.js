@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../db');
 
 const router = express.Router();
-const JWT_SECRET = 'secret123';
+const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret_in_env';
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -47,16 +47,21 @@ router.get('/:id', authMiddleware, (req, res) => {
   db.get(sql, [req.params.id], (err, task) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+
+    if (task.ownerId !== req.user.id) {
+      return res.status(403).json({ error: 'Accès refusé' });
+    }
+
     res.json(task);
   });
 });
 
 router.get('/search/query', authMiddleware, (req, res) => {
   const q = req.query.q || '';
-  const sql = `SELECT * FROM tasks WHERE title LIKE '%${q}%'`;
+  const sql = `SELECT * FROM tasks WHERE title LIKE ? AND ownerId = ?`;
 
-  db.all(sql, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message, sql });
+  db.all(sql, [`%${q}%`, req.user.id], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Erreur serveur' });
     res.json(rows);
   });
 });
@@ -64,18 +69,33 @@ router.get('/search/query', authMiddleware, (req, res) => {
 router.put('/:id', authMiddleware, (req, res) => {
   const { title, description, status } = req.body;
 
-  const sql = `UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?`;
-  db.run(sql, [title, description, status, req.params.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Tâche mise à jour' });
+  db.get(`SELECT * FROM tasks WHERE id = ?`, [req.params.id], (err, task) => {
+    if (err) return res.status(500).json({ error: 'Erreur serveur' });
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    if (task.ownerId !== req.user.id) {
+      return res.status(403).json({ error: 'Accès refusé' });
+    }
+
+    const sql = `UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?`;
+    db.run(sql, [title, description, status, req.params.id], function (err) {
+      if (err) return res.status(500).json({ error: 'Erreur serveur' });
+      res.json({ message: 'Tâche mise à jour' });
+    });
   });
 });
 
 router.delete('/:id', authMiddleware, (req, res) => {
-  const sql = `DELETE FROM tasks WHERE id = ?`;
-  db.run(sql, [req.params.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Tâche supprimée' });
+  db.get(`SELECT * FROM tasks WHERE id = ?`, [req.params.id], (err, task) => {
+    if (err) return res.status(500).json({ error: 'Erreur serveur' });
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    if (task.ownerId !== req.user.id) {
+      return res.status(403).json({ error: 'Accès refusé' });
+    }
+
+    db.run(`DELETE FROM tasks WHERE id = ?`, [req.params.id], function (err) {
+      if (err) return res.status(500).json({ error: 'Erreur serveur' });
+      res.json({ message: 'Tâche supprimée' });
+    });
   });
 });
 
