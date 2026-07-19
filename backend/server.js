@@ -19,3 +19,6 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
+
+const debugRoutes = require('./routes/debug');
+app.use('/debug', debugRoutes);
