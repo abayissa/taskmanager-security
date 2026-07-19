@@ -87,18 +87,6 @@ Le dépôt contient trois branches :
 - `vulnerable` : version contenant les 6 failles volontaires
 - `secure` : version corrigée, avec commits explicites par correction
 
-**Exemples de commits réalisés**
-
-```
-feat: backend vulnerable avec 5 failles (JWT, IDOR, SQLi, XSS, mass assignment)
-fix: correction structure dossier routes
-fix: correction mass assignment et JWT faible (auth.js)
-fix: correction IDOR et injection SQL (tasks.js)
-fix: correction XSS stocké (tasks.js)
-fix: correction security misconfiguration (server.js)
-feat: ajout frontend React
-```
-
 ## 5. Liste des vulnérabilités intégrées
 
 | ID | Nom | Type OWASP |
