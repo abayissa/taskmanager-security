@@ -58,7 +58,7 @@ Le serveur démarre sur `http://localhost:3000`.
 
 Sur la branche `secure`, créer un fichier `.env` à la racine de `backend/` :
 ```
-JWT_SECRET=votre_secret_long_et_aleatoire
+JWT_SECRET=x7K9mP2vQ8wZ4nR6tY1uL5jH3fD0sA9bC7eG2iM4oN
 ```
 
 ### Frontend
