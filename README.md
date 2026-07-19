@@ -22,7 +22,7 @@ npm install
 
 Sur la branche `secure`, créer un fichier `.env` à la racine de `backend/` :
 ```
-JWT_SECRET=votre_secret_long_et_aleatoire
+JWT_SECRET=votre_secret_ici
 ```
 
 ### Frontend
